@@ -1,0 +1,6 @@
+{
+  "name": "Cinegobetti — Sua Lista de Filmes",
+  "description": "Aplicativo cinematográfico premium mobile-first com deslocamento de vidro líquido, múltiplos perfis, listas personalizadas e recomendador inteligente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
