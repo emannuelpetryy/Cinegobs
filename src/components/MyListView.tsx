@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Movie, Profile, WatchStatus } from '../types/index.ts';
 import { MovieCard } from './MovieCard.tsx';
+import { AvatarDisplay } from './AvatarDisplay.tsx';
 import { calculateProfileStats } from '../utils/movieLogic.ts';
 
 interface MyListViewProps {
@@ -98,11 +99,13 @@ export const MyListView: React.FC<MyListViewProps> = ({
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl p-1 shrink-0 shadow-lg"
             style={{ backgroundColor: `${profile.accentColor}30` }}
           >
-            <img
-              src={profile.avatarUrl}
-              alt={profile.name}
-              className="w-full h-full object-cover rounded-xl border border-white/20"
-            />
+            <div className="w-full h-full rounded-xl overflow-hidden border border-white/20">
+              <AvatarDisplay
+                avatar={profile.avatarUrl}
+                name={profile.name}
+                className="w-full h-full"
+              />
+            </div>
           </div>
 
           <div className="flex-1">
