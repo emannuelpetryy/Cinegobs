@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Profile, Movie, FilterState, ActiveTab, UserMovieData } from './types/index.ts';
+import { Profile, Movie, FilterState, ActiveTab, UserMovieData, WatchStatus } from './types/index.ts';
 import { MOVIES_DATA, DEFAULT_PROFILES } from './data/movies.ts';
 import { filterMovies, sortMovies, getActiveFiltersCount } from './utils/movieLogic.ts';
 import { loadLocally, persistLocally, syncToCloud } from './utils/cloudSync.ts';
@@ -12,6 +12,7 @@ import { MyListView } from './components/MyListView.tsx';
 import { DiscoverWizard } from './components/DiscoverWizard.tsx';
 import { FilterDrawer } from './components/FilterDrawer.tsx';
 import { MovieModal } from './components/MovieModal.tsx';
+import { AddMovieModal } from './components/AddMovieModal.tsx';
 
 export default function App() {
   // Check autostart param from URL (e.g., ?autostart=1)
@@ -28,6 +29,23 @@ export default function App() {
   const [profiles, setProfiles] = useState<Profile[]>(initialData.profiles);
   const [activeProfileId, setActiveProfileId] = useState<string>(initialData.activeId);
 
+  // Custom user-added movies from TMDB persisted in localStorage
+  const [customMovies, setCustomMovies] = useState<Movie[]>(() => {
+    try {
+      const saved = localStorage.getItem('cinegobetti_custom_movies_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Merged Catalog (217 curated titles + custom added titles)
+  const allMovies = useMemo(() => {
+    const customIds = new Set(customMovies.map((m) => m.id));
+    const baseWithoutDuplicates = MOVIES_DATA.filter((m) => !customIds.has(m.id));
+    return [...customMovies, ...baseWithoutDuplicates];
+  }, [customMovies]);
+
   // Current view: welcome (Quem está assistindo?) or main app
   const [view, setView] = useState<'welcome' | 'app'>(() => {
     if (isAutoStart) return 'app';
@@ -37,6 +55,7 @@ export default function App() {
   // Navigation tab
   const [activeTab, setActiveTab] = useState<ActiveTab>('explore');
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
+  const [isAddMovieModalOpen, setIsAddMovieModalOpen] = useState<boolean>(false);
 
   // Selected Movie for Detail Modal
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -59,16 +78,20 @@ export default function App() {
     return () => clearTimeout(syncTimer);
   }, [profiles, activeProfileId]);
 
-  // Active Profile reference
+  // Active Profile reference with fail-safe fallback
   const activeProfile = useMemo(() => {
-    return profiles.find((p) => p.id === activeProfileId) || profiles[0];
+    return (
+      profiles.find((p) => p.id === activeProfileId) ||
+      profiles[0] ||
+      DEFAULT_PROFILES[0]
+    );
   }, [profiles, activeProfileId]);
 
   // Compute filtered & sorted catalog
   const filteredAndSortedMovies = useMemo(() => {
-    const filtered = filterMovies(MOVIES_DATA, filters);
+    const filtered = filterMovies(allMovies, filters);
     return sortMovies(filtered, filters.sortBy);
-  }, [filters]);
+  }, [allMovies, filters]);
 
   const activeFiltersCount = useMemo(() => {
     return getActiveFiltersCount(filters);
@@ -151,7 +174,7 @@ export default function App() {
           updatedAt: new Date().toISOString(),
         };
 
-        // If status is none and no rating or review, remove from map
+        // If status is none and no rating or review or favorite, remove from map
         if (
           updatedEntry.status === 'none' &&
           !updatedEntry.userRating &&
@@ -178,6 +201,29 @@ export default function App() {
     const currentStatus = activeProfile?.list?.[movieId]?.status;
     const newStatus = currentStatus === 'watchlist' ? 'none' : 'watchlist';
     handleUpdateUserMovieData(movieId, { status: newStatus });
+  };
+
+  // Adding movie from TMDB or custom entry
+  const handleAddMovie = (movie: Movie, initialStatus: WatchStatus) => {
+    setCustomMovies((prev) => {
+      const updated = [movie, ...prev.filter((m) => m.id !== movie.id)];
+      try {
+        localStorage.setItem(
+          'cinegobetti_custom_movies_v2',
+          JSON.stringify(updated)
+        );
+      } catch (err) {
+        console.warn('Erro ao salvar filme customizado localmente:', err);
+      }
+      return updated;
+    });
+
+    if (initialStatus && initialStatus !== 'none') {
+      handleUpdateUserMovieData(movie.id, { status: initialStatus });
+    }
+
+    // Open detail modal to review newly added title
+    setSelectedMovie(movie);
   };
 
   // Quick genre toggle from Explore header pills
@@ -233,7 +279,7 @@ export default function App() {
       className="min-h-screen bg-[#07080C] text-[#F1F3F9] flex flex-col selection:bg-violet-600 selection:text-white"
       data-testid="cinegobetti-app"
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {view === 'welcome' ? (
           <CinemaWelcomeScreen
             key="cinema-welcome"
@@ -252,7 +298,7 @@ export default function App() {
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             className="flex-1 flex flex-col pb-24"
           >
-            {/* TopBar with h-16 calibrated header and avatar flight recipient */}
+            {/* TopBar with h-16 calibrated header, prominent logo and [+ Novo] button */}
             <TopBar
               activeProfile={activeProfile}
               searchQuery={filters.query}
@@ -262,6 +308,7 @@ export default function App() {
                 setActiveTab('explore');
                 setFilters((prev) => ({ ...prev, query: '', genres: [], streamings: [] }));
               }}
+              onOpenAddMovie={() => setIsAddMovieModalOpen(true)}
             />
 
             {/* Main Views */}
@@ -275,13 +322,14 @@ export default function App() {
                   onQuickGenreSelect={handleQuickGenreSelect}
                   userList={activeProfile.list || {}}
                   onToggleWatchlist={handleToggleWatchlist}
+                  onOpenAddMovie={() => setIsAddMovieModalOpen(true)}
                 />
               )}
 
               {activeTab === 'mylist' && (
                 <MyListView
                   profile={activeProfile}
-                  movies={MOVIES_DATA}
+                  movies={allMovies}
                   onOpenMovie={(m) => setSelectedMovie(m)}
                   onExploreClick={() => setActiveTab('explore')}
                 />
@@ -289,7 +337,7 @@ export default function App() {
 
               {activeTab === 'discover' && (
                 <DiscoverWizard
-                  movies={MOVIES_DATA}
+                  movies={allMovies}
                   onOpenMovie={(m) => setSelectedMovie(m)}
                   onAddToWatchlist={handleToggleWatchlist}
                   userList={activeProfile.list || {}}
@@ -325,11 +373,19 @@ export default function App() {
                   onUpdateUserData={handleUpdateUserMovieData}
                   profiles={profiles}
                   activeProfileId={activeProfileId}
-                  allMovies={MOVIES_DATA}
+                  allMovies={allMovies}
                   onSelectMovie={(m) => setSelectedMovie(m)}
                 />
               )}
             </AnimatePresence>
+
+            {/* Add Movie / TMDB Multi-Search Modal */}
+            <AddMovieModal
+              isOpen={isAddMovieModalOpen}
+              onClose={() => setIsAddMovieModalOpen(false)}
+              onAddMovie={handleAddMovie}
+              initialQuery={filters.query}
+            />
           </motion.div>
         )}
       </AnimatePresence>

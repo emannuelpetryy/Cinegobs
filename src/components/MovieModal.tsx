@@ -21,6 +21,7 @@ import { Movie, UserMovieData, WatchStatus, STREAMING_PLATFORMS, Profile } from 
 import { formatRuntime, getFriendReviewsForMovie, getSimilarMovies } from '../utils/movieLogic.ts';
 import { TrailerModal } from './TrailerModal.tsx';
 import { StreamingIcon } from './StreamingIcons.tsx';
+import { AvatarDisplay } from './AvatarDisplay.tsx';
 
 interface MovieModalProps {
   movie: Movie | null;
@@ -353,10 +354,10 @@ export const MovieModal: React.FC<MovieModalProps> = ({
                           className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border p-[1px]"
                           style={{ borderColor: rev.accentColor }}
                         >
-                          <img
-                            src={rev.avatarUrl}
-                            alt={rev.profileName}
-                            className="w-full h-full object-cover rounded-[10px]"
+                          <AvatarDisplay
+                            avatar={rev.avatarUrl}
+                            name={rev.profileName}
+                            className="w-full h-full rounded-[10px]"
                           />
                         </div>
 

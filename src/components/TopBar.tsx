@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Film, Users } from 'lucide-react';
+import { Search, X, Plus, Users } from 'lucide-react';
 import { Profile } from '../types/index.ts';
+import { AvatarDisplay } from './AvatarDisplay.tsx';
 
 interface TopBarProps {
-  activeProfile: Profile;
+  activeProfile?: Profile;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onSwitchProfile: () => void;
   onLogoClick?: () => void;
+  onOpenAddMovie?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -17,9 +19,20 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSearchChange,
   onSwitchProfile,
   onLogoClick,
+  onOpenAddMovie,
 }) => {
   const [isSearchExpandedMobile, setIsSearchExpandedMobile] = useState<boolean>(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const profile: Profile = activeProfile || {
+    id: 'default',
+    name: 'Perfil',
+    avatarUrl: '/imgs/icon.png',
+    accentColor: '#8B5CF6',
+    createdAt: '',
+    isPinProtected: false,
+    list: {},
+  };
 
   const handleOpenMobileSearch = () => {
     setIsSearchExpandedMobile(true);
@@ -77,32 +90,22 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
           </motion.div>
         ) : (
-          /* Standard Header: Uncrowded on mobile, expansive on desktop */
+          /* Standard Header */
           <div key="standard-header" className="w-full flex items-center justify-between gap-2 sm:gap-4">
-            {/* Left: Brand Logo & Title (Apple calibrated) */}
+            {/* Left: Brand Logo (Prominent with PRO badge) */}
             <button
               onClick={onLogoClick}
-              className="flex items-center gap-2.5 sm:gap-3 text-left focus:outline-none group active:scale-95 transition-transform shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 text-left focus:outline-none group active:scale-95 transition-transform shrink-0"
               aria-label="Cinegobetti Início"
             >
-              <div className="h-10 sm:h-[46px] md:h-[50px] aspect-square rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-amber-500 p-[1.5px] shadow-lg shadow-violet-600/20">
-                <div className="w-full h-full bg-[#0D0F17] rounded-[14px] flex items-center justify-center text-amber-400">
-                  <Film className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.75} />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm sm:text-lg font-extrabold tracking-tight text-white group-hover:text-amber-300 transition-colors">
-                    Cinegobetti
-                  </span>
-                  <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                    PRO
-                  </span>
-                </div>
-                <span className="text-[10px] text-white/40 font-medium tracking-tight -mt-0.5 hidden xs:inline">
-                  Cinema Particular
-                </span>
-              </div>
+              <img
+                src="/imgs/logo.png"
+                alt="Cinegobetti"
+                className="h-8 sm:h-9 md:h-10 w-auto object-contain filter drop-shadow-[0_4px_12px_rgba(139,92,246,0.3)] group-hover:scale-102 transition-transform duration-300"
+              />
+              <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                PRO
+              </span>
             </button>
 
             {/* Middle: Desktop Search Bar (Hidden on Mobile) */}
@@ -128,40 +131,54 @@ export const TopBar: React.FC<TopBarProps> = ({
               </div>
             </div>
 
-            {/* Right: Actions (Search button on mobile + Profile Chip) */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+              {/* Add New Movie Button */}
+              {onOpenAddMovie && (
+                <button
+                  type="button"
+                  onClick={onOpenAddMovie}
+                  className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-violet-600/25 active:scale-95 transition-all"
+                  title="Adicionar novo filme ou série via TMDB"
+                  aria-label="Adicionar filme ou série"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span className="hidden xs:inline">Novo</span>
+                </button>
+              )}
+
               {/* Mobile Search Trigger Button */}
               <button
                 type="button"
                 onClick={handleOpenMobileSearch}
-                className="sm:hidden w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70 hover:text-white active:scale-95 transition-all"
+                className="sm:hidden w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70 hover:text-white active:scale-95 transition-all"
                 aria-label="Abrir busca rápida"
               >
-                <Search className="w-4 h-4" strokeWidth={1.75} />
+                <Search className="w-3.5 h-3.5" strokeWidth={1.75} />
               </button>
 
-              {/* Profile Avatar & Switcher with Hero Flight motion layoutId */}
+              {/* Profile Avatar & Switcher */}
               <button
                 onClick={onSwitchProfile}
                 className="flex items-center gap-2 pl-2 sm:pl-2.5 pr-1.5 sm:pr-2 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 active:scale-95 transition-all text-xs font-semibold text-white/90 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                 title="Trocar perfil"
-                aria-label={`Perfil atual: ${activeProfile.name}. Toque para trocar`}
+                aria-label={`Perfil atual: ${profile.name}. Toque para trocar`}
               >
                 <span className="hidden sm:inline-block max-w-[85px] truncate text-xs text-white/80 font-medium">
-                  {activeProfile.name}
+                  {profile.name}
                 </span>
-                <motion.div
-                  layoutId={`avatar-${activeProfile.id}`}
+                <div
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-[1px] overflow-hidden shadow-md shrink-0 border border-white/20"
-                  style={{ backgroundColor: activeProfile.accentColor }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  style={{ backgroundColor: profile.accentColor }}
                 >
-                  <img
-                    src={activeProfile.avatarUrl}
-                    alt={activeProfile.name}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </motion.div>
+                  <div className="w-full h-full rounded-full overflow-hidden">
+                    <AvatarDisplay
+                      avatar={profile.avatarUrl}
+                      name={profile.name}
+                      className="w-full h-full rounded-full"
+                    />
+                  </div>
+                </div>
                 <Users className="w-3.5 h-3.5 text-white/40 sm:hidden" strokeWidth={1.75} />
               </button>
             </div>

@@ -29,11 +29,11 @@ export function filterMovies(movies: Movie[], filters: FilterState): Movie[] {
     // Search query check
     if (filters.query && filters.query.trim() !== '') {
       const q = filters.query.toLowerCase().trim();
-      const matchTitle = movie.title.toLowerCase().includes(q);
-      const matchOriginal = movie.originalTitle.toLowerCase().includes(q);
-      const matchDirector = movie.director.toLowerCase().includes(q);
-      const matchGenre = movie.genres.some((g) => g.toLowerCase().includes(q));
-      const matchCast = movie.cast.some((c) => c.toLowerCase().includes(q));
+      const matchTitle = (movie.title || '').toLowerCase().includes(q);
+      const matchOriginal = (movie.originalTitle || '').toLowerCase().includes(q);
+      const matchDirector = (movie.director || '').toLowerCase().includes(q);
+      const matchGenre = (movie.genres || []).some((g) => g.toLowerCase().includes(q));
+      const matchCast = (movie.cast || []).some((c) => c.toLowerCase().includes(q));
       if (!matchTitle && !matchOriginal && !matchDirector && !matchGenre && !matchCast) {
         return false;
       }
@@ -46,7 +46,8 @@ export function filterMovies(movies: Movie[], filters: FilterState): Movie[] {
 
     // Streaming platforms filter (OR within selected streamings)
     if (filters.streamings.length > 0) {
-      const hasStreaming = movie.streamingPlatforms.some((sp) =>
+      const platforms = movie.streamingPlatforms || [];
+      const hasStreaming = platforms.some((sp) =>
         filters.streamings.includes(sp)
       );
       if (!hasStreaming) return false;
@@ -54,8 +55,9 @@ export function filterMovies(movies: Movie[], filters: FilterState): Movie[] {
 
     // Genre filter (AND match all selected genres)
     if (filters.genres.length > 0) {
+      const genres = movie.genres || [];
       const hasAllGenres = filters.genres.every((fg) =>
-        movie.genres.includes(fg)
+        genres.includes(fg)
       );
       if (!hasAllGenres) return false;
     }
@@ -68,15 +70,15 @@ export function sortMovies(movies: Movie[], sortBy: FilterState['sortBy']): Movi
   const cloned = [...movies];
   switch (sortBy) {
     case 'letterboxd':
-      return cloned.sort((a, b) => b.letterboxdRating - a.letterboxdRating);
+      return cloned.sort((a, b) => (b.letterboxdRating ?? b.rating ?? 0) - (a.letterboxdRating ?? a.rating ?? 0));
     case 'rating':
-      return cloned.sort((a, b) => b.rating - a.rating);
+      return cloned.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     case 'year':
-      return cloned.sort((a, b) => b.year - a.year);
+      return cloned.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
     case 'title':
-      return cloned.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
+      return cloned.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR'));
     case 'runtime':
-      return cloned.sort((a, b) => b.runtimeMinutes - a.runtimeMinutes);
+      return cloned.sort((a, b) => (b.runtimeMinutes ?? 0) - (a.runtimeMinutes ?? 0));
     default:
       return cloned;
   }

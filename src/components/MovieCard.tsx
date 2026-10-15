@@ -1,7 +1,6 @@
 import React from 'react';
-import { Star, Bookmark, CheckCircle2, PlayCircle, Heart } from 'lucide-react';
+import { Star, CheckCircle2, PlayCircle, Heart } from 'lucide-react';
 import { Movie, UserMovieData, STREAMING_PLATFORMS } from '../types/index.ts';
-import { formatRuntime } from '../utils/movieLogic.ts';
 import { StreamingIcon } from './StreamingIcons.tsx';
 
 interface MovieCardProps {
@@ -15,9 +14,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   userData,
   onClick,
 }) => {
-  // Find streaming labels for top badges
+  // Find streaming labels for top badges safely
+  const primaryPlatformId = (movie.streamingPlatforms || [])[0];
   const primaryStreaming = STREAMING_PLATFORMS.find(
-    (p) => p.id === movie.streamingPlatforms[0]
+    (p) => p.id === primaryPlatformId
   );
 
   return (
@@ -46,7 +46,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         {/* Ambient poster gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent pointer-events-none opacity-80 group-hover:opacity-60 transition-opacity" />
 
-        {/* Top Badges: Streaming (strictly single-line nowrap) and User Favorite */}
+        {/* Top Badges: Streaming and User Favorite */}
         <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none gap-1">
           {primaryStreaming && (
             <span
@@ -77,12 +77,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {userData?.userRating ? (
               <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-amber-400 text-black text-[10px] sm:text-[11px] font-extrabold tabular-nums shadow-md whitespace-nowrap">
                 <Star className="w-3 h-3 fill-black text-black" strokeWidth={1.75} />
-                <span>{userData.userRating.toFixed(1)}</span>
+                <span>{Number(userData.userRating).toFixed(1)}</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-amber-300 text-[10px] sm:text-[11px] font-bold tabular-nums whitespace-nowrap">
                 <Star className="w-3 h-3 fill-amber-300 text-amber-300" strokeWidth={1.75} />
-                <span>{movie.letterboxdRating.toFixed(1)}</span>
+                <span>{(movie.letterboxdRating ?? movie.rating ?? 8.0).toFixed(1)}</span>
               </span>
             )}
 
@@ -97,26 +97,22 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 <PlayCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" strokeWidth={1.75} />
               </span>
             )}
-            {userData?.status === 'watchlist' && (
-              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-violet-500/90 text-white flex items-center justify-center shadow-sm shrink-0" title="Na Minha Lista">
-                <Bookmark className="w-2.5 h-2.5 sm:w-3 sm:h-3" strokeWidth={1.75} />
-              </span>
-            )}
           </div>
 
-          <span className="text-[10px] text-white/70 font-semibold tabular-nums shrink-0">
+          {/* Release Year */}
+          <span className="text-[10px] sm:text-[11px] font-medium text-white/50 tabular-nums">
             {movie.year}
           </span>
         </div>
       </div>
 
       {/* Title & Metadata */}
-      <div className="mt-2 px-0.5">
-        <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight line-clamp-1 group-hover:text-violet-300 transition-colors">
+      <div className="mt-2 flex flex-col px-0.5">
+        <h3 className="text-xs sm:text-sm font-semibold text-white/90 group-hover:text-white transition-colors line-clamp-1">
           {movie.title}
         </h3>
-        <p className="text-[10px] sm:text-[11px] text-white/50 font-medium truncate mt-0.5">
-          {movie.genres.slice(0, 2).join(' • ')} · {formatRuntime(movie.runtimeMinutes)}
+        <p className="text-[10px] sm:text-[11px] text-white/40 line-clamp-1 mt-0.5">
+          {(movie.genres || []).slice(0, 2).join(' • ')}
         </p>
       </div>
     </div>

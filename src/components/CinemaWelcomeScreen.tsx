@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings2, Plus, Trash2, Edit2, Check, Film, Sparkles, ShieldCheck } from 'lucide-react';
+import { Settings2, Plus, Trash2, Edit2, Check, Sparkles, ShieldCheck } from 'lucide-react';
 import { Profile } from '../types/index.ts';
 import { PinModal } from './PinModal.tsx';
 import { ProfileModal } from './ProfileModal.tsx';
+import { AvatarDisplay } from './AvatarDisplay.tsx';
 import { MOVIES_DATA } from '../data/movies.ts';
 
 interface CinemaWelcomeScreenProps {
@@ -65,7 +66,8 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.35 } }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       className="relative min-h-screen w-full flex flex-col items-center justify-between p-6 overflow-hidden bg-[#07080C]"
       data-testid="welcome-screen"
     >
@@ -87,21 +89,15 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
 
       {/* Top Header Bar */}
       <header className="relative z-10 w-full max-w-4xl flex items-center justify-between pt-4 sm:pt-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-amber-500 p-[1.5px] shadow-lg shadow-violet-500/20">
-            <div className="w-full h-full bg-[#0D0F17] rounded-2xl flex items-center justify-center text-amber-400">
-              <Film className="w-5 h-5" strokeWidth={1.75} />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-              <span>Cinegobetti</span>
-              <span className="text-[10px] tracking-widest uppercase font-semibold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                Apple TV+ Edition
-              </span>
-            </h1>
-            <p className="text-xs text-white/50 font-medium">Cinema Particular Compartilhado</p>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/imgs/logo.png"
+            alt="Cinegobetti"
+            className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_6px_16px_rgba(139,92,246,0.35)]"
+          />
+          <span className="text-[9px] sm:text-[10px] tracking-widest uppercase font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+            PRO
+          </span>
         </div>
 
         <button
@@ -132,7 +128,7 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-10 sm:mb-12"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-medium mb-4">
@@ -144,8 +140,8 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-white/50 mt-2 max-w-md mx-auto">
             {isManaging
-              ? 'Edite nome, foto ou toque no botão vermelho para excluir (requer PIN).'
-              : 'Escolha seu perfil para acessar sua lista de filmes, avaliações e ver as notas dos amigos.'}
+              ? 'Toque em um perfil para editar foto e nome, ou no botão vermelho para excluir.'
+              : 'Escolha seu perfil para acessar seu catálogo, avaliações e ver as notas dos amigos.'}
           </p>
         </motion.div>
 
@@ -185,17 +181,14 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
                       className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl p-1 transition-all duration-200 transform group-hover:scale-105 active:scale-94 focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-2xl bg-[#11131C] border border-white/10"
                       aria-label={`Entrar no perfil de ${profile.name}`}
                     >
-                      {/* Shared Element Avatar with motion layoutId */}
-                      <motion.div
-                        layoutId={`avatar-${profile.id}`}
-                        className="w-full h-full rounded-[22px] overflow-hidden border-2 border-white/20 group-hover:border-white transition-colors"
-                      >
-                        <img
-                          src={profile.avatarUrl}
-                          alt={profile.name}
-                          className="w-full h-full object-cover"
+                      {/* Avatar with universal AvatarDisplay */}
+                      <div className="w-full h-full rounded-[22px] overflow-hidden border-2 border-white/20 group-hover:border-white transition-colors">
+                        <AvatarDisplay
+                          avatar={profile.avatarUrl}
+                          name={profile.name}
+                          className="w-full h-full"
                         />
-                      </motion.div>
+                      </div>
 
                       {/* Apple specular sheen overlay */}
                       <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

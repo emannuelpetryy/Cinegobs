@@ -11,7 +11,8 @@ import {
   Tv,
   Baby,
   LayoutGrid,
-  Rows3
+  Rows3,
+  Plus,
 } from 'lucide-react';
 import { Movie, FilterState, UserMovieData } from '../types/index.ts';
 import { MovieCard } from './MovieCard.tsx';
@@ -25,6 +26,7 @@ interface ExploreViewProps {
   onQuickGenreSelect: (genre: string) => void;
   userList: Record<string, UserMovieData>;
   onToggleWatchlist: (movieId: string) => void;
+  onOpenAddMovie?: () => void;
 }
 
 const QUICK_CATEGORIES = [
@@ -47,6 +49,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   onQuickGenreSelect,
   userList,
   onToggleWatchlist,
+  onOpenAddMovie,
 }) => {
   const [layoutMode, setLayoutMode] = useState<'carousels' | 'grid'>('carousels');
 
@@ -91,7 +94,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
               </span>
               <span className="text-xs font-bold text-amber-300 flex items-center gap-1">
                 <Star className="w-3.5 h-3.5 fill-amber-300" strokeWidth={1.75} />
-                {featuredMovie.letterboxdRating.toFixed(1)} Letterboxd
+                {(featuredMovie.letterboxdRating ?? featuredMovie.rating ?? 8.5).toFixed(1)} Letterboxd
               </span>
               <span className="text-xs text-white/50">•</span>
               <span className="text-xs text-white/70 font-medium">
@@ -390,14 +393,25 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                 Nenhum filme ou série encontrado com esses filtros.
               </p>
               <p className="text-xs text-white/40 mb-4">
-                Experimente limpar a busca ou selecionar outro streaming.
+                Experimente limpar a busca ou adicione a obra diretamente pelo TMDB.
               </p>
-              <button
-                onClick={onOpenFilterDrawer}
-                className="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all border border-white/10"
-              >
-                Ajustar Filtros
-              </button>
+              <div className="flex items-center justify-center gap-2.5 flex-wrap">
+                <button
+                  onClick={onOpenFilterDrawer}
+                  className="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all border border-white/10"
+                >
+                  Ajustar Filtros
+                </button>
+                {onOpenAddMovie && (
+                  <button
+                    onClick={onOpenAddMovie}
+                    className="px-4 py-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/30 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Buscar no TMDB</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
