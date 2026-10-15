@@ -51,4 +51,21 @@ describe('Cinegobs Integration & Data Integrity', () => {
     const cinegobettiIcons = AVATAR_OPTIONS.filter((a) => a.category === 'Cinegobetti');
     expect(cinegobettiIcons.length).toBe(3);
   });
+
+  it('ensures geral profile starts with an empty list and does not clone legacy watched array', () => {
+    const geralDefault = DEFAULT_PROFILES.find((p) => p.id === 'geral');
+    expect(geralDefault).toBeDefined();
+    expect(Object.keys(geralDefault!.list || {}).length).toBe(0);
+
+    const legacyGeralData = {
+      id: 'geral',
+      name: 'Geral',
+      watched: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6'],
+      queue: ['w10', 'w11'],
+    };
+
+    const normalized = normalizeCloudProfile(legacyGeralData);
+    expect(normalized.id).toBe('geral');
+    expect(Object.keys(normalized.list).length).toBe(0);
+  });
 });

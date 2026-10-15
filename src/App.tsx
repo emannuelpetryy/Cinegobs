@@ -274,6 +274,16 @@ export default function App() {
     }
   };
 
+  const handleResetFilters = () => {
+    setFilters({
+      query: '',
+      streamings: [],
+      genres: [],
+      mediaType: 'all',
+      sortBy: 'rating',
+    });
+  };
+
   return (
     <div
       className="min-h-screen bg-[#07080C] text-[#F1F3F9] flex flex-col selection:bg-violet-600 selection:text-white"
@@ -306,7 +316,7 @@ export default function App() {
               onSwitchProfile={() => setView('welcome')}
               onLogoClick={() => {
                 setActiveTab('explore');
-                setFilters((prev) => ({ ...prev, query: '', genres: [], streamings: [] }));
+                handleResetFilters();
               }}
               onOpenAddMovie={() => setIsAddMovieModalOpen(true)}
             />
@@ -323,6 +333,7 @@ export default function App() {
                   userList={activeProfile.list || {}}
                   onToggleWatchlist={handleToggleWatchlist}
                   onOpenAddMovie={() => setIsAddMovieModalOpen(true)}
+                  onResetFilters={handleResetFilters}
                 />
               )}
 

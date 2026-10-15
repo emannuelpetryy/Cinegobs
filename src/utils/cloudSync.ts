@@ -4,15 +4,26 @@ const STORAGE_PROFILES_KEY = 'cinegobetti_profiles_v2';
 const STORAGE_ACTIVE_PROFILE_KEY = 'cinegobetti_active_profile_v2';
 
 export function normalizeCloudProfile(p: any): Profile {
+  const isGeral = p?.id === 'geral';
   const list: Record<string, UserMovieData> = {};
 
   // 1. If already in new v2 format
   if (p && p.list && typeof p.list === 'object') {
-    Object.assign(list, p.list);
+    if (!isGeral) {
+      Object.assign(list, p.list);
+    } else {
+      // If geral was populated previously with Manu's legacy clone (>= 40 items with w6, w24), keep it clean
+      const keys = Object.keys(p.list);
+      const isLegacyManuClone = keys.length >= 40 && keys.includes('w6') && keys.includes('w24');
+      if (!isLegacyManuClone) {
+        Object.assign(list, p.list);
+      }
+    }
   }
 
   // 2. If in legacy format (cinevault arrays)
-  if (Array.isArray(p?.watched)) {
+  // For 'geral', DO NOT inherit legacy watched, priority, or queue arrays!
+  if (!isGeral && Array.isArray(p?.watched)) {
     p.watched.forEach((id: string) => {
       const isMenu = id === 'w31';
       if (!list[id]) {
@@ -28,7 +39,7 @@ export function normalizeCloudProfile(p: any): Profile {
     });
   }
 
-  if (Array.isArray(p?.priority)) {
+  if (!isGeral && Array.isArray(p?.priority)) {
     p.priority.forEach((id: string) => {
       if (!list[id]) {
         list[id] = {
@@ -43,7 +54,7 @@ export function normalizeCloudProfile(p: any): Profile {
     });
   }
 
-  if (Array.isArray(p?.queue)) {
+  if (!isGeral && Array.isArray(p?.queue)) {
     p.queue.forEach((id: string) => {
       if (!list[id]) {
         list[id] = {

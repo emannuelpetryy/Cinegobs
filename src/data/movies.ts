@@ -7687,24 +7687,7 @@ export const DEFAULT_PROFILES: Profile[] = [
     "createdAt": "2026-03-01",
     "isPinProtected": true,
     "pin": "123",
-    "list": {
-      "p3": {
-        "movieId": "p3",
-        "status": "completed",
-        "userRating": 5,
-        "review": "Clássico imperdível.",
-        "updatedAt": "2026-07-15",
-        "isFavorite": true
-      },
-      "p4": {
-        "movieId": "p4",
-        "status": "completed",
-        "userRating": 4.5,
-        "review": "História de superação inspiradora.",
-        "updatedAt": "2026-08-01",
-        "isFavorite": true
-      }
-    }
+    "list": {}
   }
 ];
 

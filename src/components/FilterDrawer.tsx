@@ -92,31 +92,31 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
         <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-5" />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <h2 id="filter-drawer-title" className="text-lg font-bold text-white">
-              Filtros Cinematográficos
+        <div className="flex items-center justify-between mb-6 gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <h2 id="filter-drawer-title" className="text-lg font-bold text-white tracking-tight shrink-0">
+              Filtros
             </h2>
             {activeCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black text-xs font-bold tabular-nums">
-                {activeCount} ativos
+              <span className="whitespace-nowrap shrink-0 px-2.5 py-0.5 rounded-full bg-amber-400 text-black text-[11px] font-extrabold tabular-nums shadow-sm">
+                {activeCount} {activeCount === 1 ? 'ativo' : 'ativos'}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {activeCount > 0 && (
               <button
                 onClick={handleReset}
-                className="text-xs text-white/50 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="text-xs text-white/60 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                 aria-label="Limpar todos os filtros"
               >
-                <RotateCcw className="w-3 h-3" strokeWidth={1.75} />
+                <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
                 <span>Limpar</span>
               </button>
             )}
             <button
               onClick={onClose}
-              className="text-white/40 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+              className="text-white/50 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors"
               aria-label="Fechar gaveta de filtros"
             >
               <X className="w-5 h-5" strokeWidth={1.75} />
