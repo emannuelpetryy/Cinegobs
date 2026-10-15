@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   X,
@@ -16,6 +16,8 @@ import {
   Play,
   Users,
   Sparkles,
+  Send,
+  Pencil,
 } from 'lucide-react';
 import { Movie, UserMovieData, WatchStatus, STREAMING_PLATFORMS, Profile } from '../types/index.ts';
 import { formatRuntime, getFriendReviewsForMovie, getSimilarMovies } from '../utils/movieLogic.ts';
@@ -47,15 +49,24 @@ export const MovieModal: React.FC<MovieModalProps> = ({
   if (!movie) return null;
 
   const [reviewText, setReviewText] = useState<string>(userData?.review || '');
+  const [isEditingReview, setIsEditingReview] = useState<boolean>(!userData?.review);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'unsaved' | 'saved'>('idle');
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [isTrailerOpen, setIsTrailerOpen] = useState<boolean>(false);
 
+  const currentProfile = profiles.find((p) => p.id === activeProfileId);
   const currentStatus: WatchStatus = userData?.status || 'none';
   const currentRating = userData?.userRating || 0;
   const isFavorite = userData?.isFavorite || false;
 
   const friendReviews = getFriendReviewsForMovie(profiles, movie.id, activeProfileId);
   const similarMovies = getSimilarMovies(allMovies, movie);
+
+  useEffect(() => {
+    setReviewText(userData?.review || '');
+    setIsEditingReview(!userData?.review);
+    setSaveStatus('idle');
+  }, [movie.id, userData?.review]);
 
   const handleStatusChange = (status: WatchStatus) => {
     const nextStatus = currentStatus === status ? 'none' : status;
@@ -80,13 +91,19 @@ export const MovieModal: React.FC<MovieModalProps> = ({
     });
   };
 
-  const handleReviewBlur = () => {
-    if (reviewText !== (userData?.review || '')) {
-      onUpdateUserData(movie.id, {
-        review: reviewText,
-        updatedAt: new Date().toISOString(),
-      });
+  const handleSaveReview = () => {
+    const trimmed = reviewText.trim();
+    onUpdateUserData(movie.id, {
+      review: trimmed,
+      updatedAt: new Date().toISOString(),
+    });
+    setSaveStatus('saved');
+    if (trimmed) {
+      setIsEditingReview(false);
     }
+    setTimeout(() => {
+      setSaveStatus('idle');
+    }, 2500);
   };
 
   const handleShare = () => {
@@ -317,29 +334,125 @@ export const MovieModal: React.FC<MovieModalProps> = ({
 
               {/* Personal Review Note */}
               <div className="mt-4">
-                <label htmlFor="review-textarea" className="block text-xs font-bold text-white/80 mb-1.5">
-                  Suas Anotações & Resenha Pessoal
-                </label>
-                <textarea
-                  id="review-textarea"
-                  rows={2}
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  onBlur={handleReviewBlur}
-                  placeholder="Escreva sua opinião, frases marcantes ou observações sobre o filme..."
-                  className="w-full bg-[#131622] border border-white/10 rounded-2xl p-3 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500/60 leading-relaxed transition-all"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-white/80">
+                    Sua Anotação & Resenha Pessoal
+                  </label>
+                  {userData?.review && !isEditingReview && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReviewText(userData.review || '');
+                        setIsEditingReview(true);
+                      }}
+                      className="text-xs text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 hover:underline"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      <span>Editar</span>
+                    </button>
+                  )}
+                </div>
+
+                {userData?.review && !isEditingReview ? (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-violet-950/30 to-purple-950/20 border border-violet-500/30 flex items-start gap-3 shadow-inner">
+                    <div
+                      className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border p-[1px]"
+                      style={{ borderColor: currentProfile?.accentColor || '#8B5CF6' }}
+                    >
+                      <AvatarDisplay
+                        avatar={currentProfile?.avatarUrl || ''}
+                        name={currentProfile?.name || 'Você'}
+                        className="w-full h-full rounded-[10px]"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-white truncate">
+                            {currentProfile?.name || 'Você'}
+                          </span>
+                          <span className="text-[10px] text-violet-300 font-semibold px-1.5 py-0.2 rounded bg-violet-500/20">
+                            Seu Perfil
+                          </span>
+                        </div>
+                        {currentRating > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-300 tabular-nums bg-amber-500/10 px-1.5 py-0.5 rounded-md">
+                            <Star className="w-3 h-3 fill-amber-300" strokeWidth={1.75} />
+                            <span>{currentRating.toFixed(1)}</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-white/90 italic mt-1.5 leading-relaxed">
+                        &ldquo;{userData.review}&rdquo;
+                      </p>
+                      <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1 mt-2">
+                        <Check className="w-3 h-3" />
+                        <span>Salvo e compartilhado com os outros perfis</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <textarea
+                      id="review-textarea"
+                      rows={2}
+                      value={reviewText}
+                      onChange={(e) => {
+                        setReviewText(e.target.value);
+                        setSaveStatus('unsaved');
+                      }}
+                      placeholder="Escreva sua opinião, frases marcantes ou observações sobre o filme..."
+                      className="w-full bg-[#131622] border border-white/10 rounded-2xl p-3 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500/60 leading-relaxed transition-all"
+                    />
+                    <div className="flex items-center justify-between gap-2 pt-0.5">
+                      <span className="text-[11px] text-white/40">
+                        {saveStatus === 'saved' ? (
+                          <span className="text-emerald-400 flex items-center gap-1 font-semibold">
+                            <Check className="w-3 h-3" /> Salvo com sucesso!
+                          </span>
+                        ) : saveStatus === 'unsaved' ? (
+                          <span className="text-amber-400/80">Alterações pendentes</span>
+                        ) : (
+                          <span>Salva e compartilha com os outros perfis</span>
+                        )}
+                      </span>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {userData?.review && isEditingReview && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReviewText(userData.review || '');
+                              setIsEditingReview(false);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleSaveReview}
+                          className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/30 flex items-center gap-1.5"
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>Salvar Anotação</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Social Activity: Amigos que já assistiram & notas */}
+              {/* Social Activity: Outros perfis que já assistiram & notas */}
               <div className="mt-6 p-4 rounded-2xl bg-[#12151F] border border-white/5">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-bold text-white flex items-center gap-2">
                     <Users className="w-4 h-4 text-violet-400" strokeWidth={1.75} />
-                    <span>Amigos & Perfis que Assistiram</span>
+                    <span>Outros Perfis que Assistiram</span>
                   </h3>
                   <span className="text-[11px] text-white/40 tabular-nums">
-                    {friendReviews.length} {friendReviews.length === 1 ? 'amigo' : 'amigos'}
+                    {friendReviews.length} {friendReviews.length === 1 ? 'perfil' : 'perfis'}
                   </span>
                 </div>
 
