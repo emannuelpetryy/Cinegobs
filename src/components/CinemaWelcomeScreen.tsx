@@ -66,8 +66,7 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      exit={{ opacity: 0, transition: { duration: 0.35 } }}
       className="relative min-h-screen w-full flex flex-col items-center justify-between p-6 overflow-hidden bg-[#07080C]"
       data-testid="welcome-screen"
     >
@@ -181,14 +180,18 @@ export const CinemaWelcomeScreen: React.FC<CinemaWelcomeScreenProps> = ({
                       className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl p-1 transition-all duration-200 transform group-hover:scale-105 active:scale-94 focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-2xl bg-[#11131C] border border-white/10"
                       aria-label={`Entrar no perfil de ${profile.name}`}
                     >
-                      {/* Avatar with universal AvatarDisplay */}
-                      <div className="w-full h-full rounded-[22px] overflow-hidden border-2 border-white/20 group-hover:border-white transition-colors">
+                      {/* Shared Element Avatar with motion layoutId */}
+                      <motion.div
+                        layoutId={`avatar-${profile.id}`}
+                        className="w-full h-full rounded-[22px] overflow-hidden border-2 border-white/20 group-hover:border-white transition-colors"
+                        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                      >
                         <AvatarDisplay
                           avatar={profile.avatarUrl}
                           name={profile.name}
                           className="w-full h-full"
                         />
-                      </div>
+                      </motion.div>
 
                       {/* Apple specular sheen overlay */}
                       <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

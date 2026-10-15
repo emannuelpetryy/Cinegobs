@@ -295,7 +295,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="flex-1 flex flex-col pb-24"
           >
             {/* TopBar with h-16 calibrated header, prominent logo and [+ Novo] button */}

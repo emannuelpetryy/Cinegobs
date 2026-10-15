@@ -32,6 +32,11 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
 }) => {
   const [hasError, setHasError] = useState<boolean>(false);
 
+  // Reset error state if avatar prop changes
+  React.useEffect(() => {
+    setHasError(false);
+  }, [avatar]);
+
   // 1. Predefined vector SVG preset
   if (avatar && AVATAR_SVGS[avatar]) {
     return (

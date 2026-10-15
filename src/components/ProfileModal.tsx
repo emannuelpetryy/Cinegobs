@@ -67,27 +67,41 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = canvasRef.current || document.createElement('canvas');
-        const size = 300;
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
+        try {
+          const canvas = canvasRef.current || document.createElement('canvas');
+          const size = 256;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
 
-        if (ctx) {
-          // Crop square center
-          const minDim = Math.min(img.width, img.height);
-          const startX = (img.width - minDim) / 2;
-          const startY = (img.height - minDim) / 2;
+          if (ctx) {
+            // Crop square center
+            const minDim = Math.min(img.width, img.height);
+            const startX = (img.width - minDim) / 2;
+            const startY = (img.height - minDim) / 2;
 
-          ctx.clearRect(0, 0, size, size);
-          ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
+            ctx.clearRect(0, 0, size, size);
+            ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
 
-          const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-          setAvatarUrl(croppedDataUrl);
+            const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            setAvatarUrl(croppedDataUrl);
+          }
+        } catch (err) {
+          console.warn('Erro ao processar imagem:', err);
+        } finally {
+          setIsProcessingPhoto(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
         }
+      };
+      img.onerror = () => {
         setIsProcessingPhoto(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
       };
       img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setIsProcessingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsDataURL(file);
   };

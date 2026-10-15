@@ -167,9 +167,11 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <span className="hidden sm:inline-block max-w-[85px] truncate text-xs text-white/80 font-medium">
                   {profile.name}
                 </span>
-                <div
+                <motion.div
+                  layoutId={`avatar-${profile.id}`}
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-[1px] overflow-hidden shadow-md shrink-0 border border-white/20"
                   style={{ backgroundColor: profile.accentColor }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
                 >
                   <div className="w-full h-full rounded-full overflow-hidden">
                     <AvatarDisplay
@@ -178,7 +180,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                       className="w-full h-full rounded-full"
                     />
                   </div>
-                </div>
+                </motion.div>
                 <Users className="w-3.5 h-3.5 text-white/40 sm:hidden" strokeWidth={1.75} />
               </button>
             </div>
