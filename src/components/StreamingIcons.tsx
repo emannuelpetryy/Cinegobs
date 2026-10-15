@@ -84,8 +84,8 @@ export const StreamingIcon: React.FC<StreamingIconProps> = ({
         >
           <path
             d="M4 14C4 7 10 4 15 4C18 4 20 6 20 8.5C20 12 16 13.5 12 14C8 14.5 4 17 4 19.5C4 21 6 21.5 8 21.5C13 21.5 18 18 20 16M19 8V12M17 10H21"
-            stroke="#113CCF"
-            strokeWidth="2"
+            stroke="#38BDF8"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -124,8 +124,10 @@ export const StreamingIcon: React.FC<StreamingIconProps> = ({
           aria-label="Paramount+"
         >
           <path
-            d="M12 2L3 20H8.5L12 12.5L15.5 20H21L12 2Z"
-            fill="#0064FF"
+            d="M12 2.5L3.5 19.5H8.5L12 12.5L15.5 19.5H20.5L12 2.5Z"
+            fill="#0080FF"
+            stroke="#38BDF8"
+            strokeWidth="0.8"
           />
         </svg>
       );
@@ -140,7 +142,7 @@ export const StreamingIcon: React.FC<StreamingIconProps> = ({
           className={className}
           aria-label="MUBI"
         >
-          <rect width="24" height="24" rx="4" fill="#053225" />
+          <rect width="24" height="24" rx="5" fill="#064E3B" stroke="#37E885" strokeWidth="1.2" />
           <circle cx="7" cy="12" r="3" fill="#37E885" />
           <circle cx="17" cy="12" r="3" fill="#37E885" />
         </svg>

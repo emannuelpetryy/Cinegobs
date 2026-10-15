@@ -53,11 +53,16 @@ export function filterMovies(movies: Movie[], filters: FilterState): Movie[] {
       if (!hasStreaming) return false;
     }
 
-    // Genre filter (AND match all selected genres)
+    // Genre filter (match selected genres flexibly)
     if (filters.genres.length > 0) {
       const genres = movie.genres || [];
       const hasAllGenres = filters.genres.every((fg) =>
-        genres.includes(fg)
+        genres.some(
+          (g) =>
+            g.toLowerCase() === fg.toLowerCase() ||
+            g.toLowerCase().includes(fg.toLowerCase()) ||
+            fg.toLowerCase().includes(g.toLowerCase())
+        )
       );
       if (!hasAllGenres) return false;
     }

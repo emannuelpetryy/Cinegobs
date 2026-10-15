@@ -50,13 +50,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none gap-1">
           {primaryStreaming && (
             <span
-              className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-md backdrop-blur-md uppercase tracking-wide whitespace-nowrap shrink-0 max-w-[88px] sm:max-w-none"
-              style={{
-                backgroundColor: `${primaryStreaming.badgeColor}E6`,
-                color: primaryStreaming.badgeTextColor,
-              }}
+              className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md shadow-lg backdrop-blur-xl uppercase tracking-wide whitespace-nowrap shrink-0 max-w-[95px] sm:max-w-none bg-[#090A0F]/85 border border-white/20 text-white"
             >
-              <StreamingIcon platform={primaryStreaming.id} size={11} />
+              <span className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                <StreamingIcon platform={primaryStreaming.id} size={12} />
+              </span>
               <span className="whitespace-nowrap truncate inline-block">
                 {primaryStreaming.id === 'prime' ? 'Prime' : primaryStreaming.name}
               </span>

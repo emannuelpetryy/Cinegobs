@@ -176,7 +176,9 @@ export const DiscoverWizard: React.FC<DiscoverWizardProps> = ({
   });
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [recommendedMovie, setRecommendedMovie] = useState<Movie | null>(null);
+  const [shuffleMovie, setShuffleMovie] = useState<Movie | null>(null);
   const [shufflePoster, setShufflePoster] = useState<string>('');
+  const [isDecelerating, setIsDecelerating] = useState<boolean>(false);
 
   const handleNextStep = () => {
     if (step < 3) {
@@ -195,19 +197,41 @@ export const DiscoverWizard: React.FC<DiscoverWizardProps> = ({
   const runRoulette = () => {
     setStep(4);
     setIsShuffling(true);
+    setIsDecelerating(false);
+    setRecommendedMovie(null);
 
-    let count = 0;
-    const interval = setInterval(() => {
+    // Realistic slot-machine deceleration curve (total ~3.2 seconds)
+    const delays = [
+      45, 45, 50, 50, 50, 55, 55, 60, 65, 70, 80, 90,
+      105, 125, 150, 185, 230, 290, 360, 460, 580
+    ];
+    let stepIndex = 0;
+
+    const tick = () => {
       const randIndex = Math.floor(Math.random() * movies.length);
-      setShufflePoster(movies[randIndex].posterUrl);
-      count++;
-      if (count > 12) {
-        clearInterval(interval);
-        const result = recommendMovie(movies, survey);
-        setRecommendedMovie(result);
-        setIsShuffling(false);
+      const candidate = movies[randIndex];
+      setShuffleMovie(candidate);
+      setShufflePoster(candidate?.posterUrl || '');
+
+      stepIndex++;
+      if (stepIndex > 14) {
+        setIsDecelerating(true);
       }
-    }, 110);
+
+      if (stepIndex < delays.length) {
+        setTimeout(tick, delays[stepIndex]);
+      } else {
+        // Dramatic final suspense pause before the champion match reveals
+        setTimeout(() => {
+          const result = recommendMovie(movies, survey);
+          setRecommendedMovie(result);
+          setIsShuffling(false);
+          setIsDecelerating(false);
+        }, 400);
+      }
+    };
+
+    tick();
   };
 
   const handleReroll = () => {
@@ -492,29 +516,61 @@ export const DiscoverWizard: React.FC<DiscoverWizardProps> = ({
             className="text-center"
           >
             {isShuffling ? (
-              <div className="flex flex-col items-center py-10 sm:py-12">
-                <div className="w-40 sm:w-44 aspect-[2/3] rounded-3xl overflow-hidden border-4 border-violet-500 shadow-2xl animate-pulse mb-6 bg-[#151821]">
+              <div className="flex flex-col items-center py-8 sm:py-10">
+                <div
+                  className={`w-40 sm:w-48 aspect-[2/3] rounded-3xl overflow-hidden border-4 shadow-2xl transition-all duration-300 relative bg-[#151821] ${
+                    isDecelerating
+                      ? 'border-amber-400 shadow-amber-500/40 ring-4 ring-amber-400/30 scale-102'
+                      : 'border-violet-500 shadow-violet-600/40 animate-pulse'
+                  }`}
+                >
                   {shufflePoster ? (
                     <img
                       src={shufflePoster}
-                      alt="Embaralhando catálogo"
-                      className="w-full h-full object-cover"
+                      alt="Sorteando filme"
+                      className="w-full h-full object-cover transition-opacity duration-75"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/20">
                       <Dices className="w-12 h-12 animate-spin" strokeWidth={1.75} />
                     </div>
                   )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+
+                  {shuffleMovie && (
+                    <div className="absolute bottom-3 inset-x-2 text-center pointer-events-none">
+                      <p className="text-xs font-bold text-white line-clamp-1 drop-shadow-md">
+                        {shuffleMovie.title}
+                      </p>
+                      <p className="text-[10px] text-amber-300 font-semibold drop-shadow-sm mt-0.5">
+                        {shuffleMovie.year} · ★ {(shuffleMovie.letterboxdRating || shuffleMovie.rating || 8.0).toFixed(1)}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">
-                  Consultando a melhor obra...
+
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30 text-xs font-bold mt-4 shadow-sm">
+                  <Dices className={`w-3.5 h-3.5 ${isDecelerating ? 'animate-bounce text-amber-400' : 'animate-spin'}`} strokeWidth={1.75} />
+                  <span>
+                    {isDecelerating ? 'Quase lá... Parando no filme ideal!' : `Girando roleta entre ${movies.length} obras...`}
+                  </span>
+                </div>
+
+                <h3 className="text-lg sm:text-xl font-extrabold text-white mt-3 mb-1">
+                  {isDecelerating ? 'Preparando a sua sessão...' : 'Consultando a melhor obra...'}
                 </h3>
-                <p className="text-xs text-white/50">
-                  Analisando notas Letterboxd, streaming e seu humor hoje.
+                <p className="text-xs text-white/50 max-w-sm">
+                  Cruzando humor, tempo livre e notas dos 217 títulos.
                 </p>
               </div>
             ) : recommendedMovie ? (
-              <div className="py-2">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                className="py-2"
+              >
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold mb-4 shadow-sm">
                   <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
                   <span>Combinação Perfeita para Você!</span>
@@ -614,7 +670,7 @@ export const DiscoverWizard: React.FC<DiscoverWizardProps> = ({
                     Reiniciar
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ) : null}
           </motion.div>
         )}

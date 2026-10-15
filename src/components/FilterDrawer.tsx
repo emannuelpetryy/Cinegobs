@@ -176,8 +176,10 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                       : 'bg-white/5 text-white/70 hover:text-white border-white/5 hover:bg-white/10'
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <StreamingIcon platform={platform.id} size={16} />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-6 h-6 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center shrink-0 shadow-sm">
+                      <StreamingIcon platform={platform.id} size={15} />
+                    </div>
                     <span className="truncate">{platform.name}</span>
                   </div>
                   <div
